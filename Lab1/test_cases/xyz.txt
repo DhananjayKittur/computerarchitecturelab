@@ -1,0 +1,41 @@
+20
+			Test Case: 0
+N_COEFFS:   .word 3
+			Test Case: 1
+N_COEFFS:   .word 3
+			Test Case: 2
+N_COEFFS:   .word 3
+			Test Case: 3
+N_COEFFS:   .word 3
+			Test Case: 4
+N_COEFFS:   .word 3
+			Test Case: 5
+N_COEFFS:   .word 3
+			Test Case: 6
+N_COEFFS:   .word 3
+			Test Case: 7
+N_COEFFS:   .word 3
+			Test Case: 8
+N_COEFFS:   .word 3
+			Test Case: 9
+N_COEFFS:   .word 3
+			Test Case: 10
+N_COEFFS:   .word 3
+			Test Case: 11
+N_COEFFS:   .word 3
+			Test Case: 12
+N_COEFFS:   .word 3
+			Test Case: 13
+N_COEFFS:   .word 3
+			Test Case: 14
+N_COEFFS:   .word 3
+			Test Case: 15
+N_COEFFS:   .word 3
+			Test Case: 16
+N_COEFFS:   .word 3
+			Test Case: 17
+N_COEFFS:   .word 3
+			Test Case: 18
+N_COEFFS:   .word 3
+			Test Case: 19
+N_COEFFS:   .word 3
