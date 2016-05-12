@@ -1,1 +1,1 @@
-E:\ComputerArchitectureLab\Lab1\winmips64\Test\smooth_loop_unroll_shift_division_2.s
+E:\ComputerArchitectureLab\Lab1\winmips64\Solution\smooth_loop_unroll_shift_division_2.s
