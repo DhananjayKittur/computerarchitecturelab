@@ -96,20 +96,20 @@ outer_loop:
 	daddi r7, r7, -8
 	l.d f4, sample(r7)
 	s.d f4, result(r7)
-	
-;;printdouble:
-;;	lwu r11, CR(r0) ;; Control Register
-;;	lwu r12, DR(r0) ;; Data Register
-;;	daddi r10, r0, 3
-;;	daddi r7, r0, 0
-;;	ld r8, N_SAMPLES(r0)
-;;PRINT_LOOP:
-;;	l.d f1, result(r7)
-;;	s.d f1, (r12)   ;; output f0 .... 
-;;	sd r10, (r11)   ;; .... to screen
-;;	daddi r8, r8, -1
-;;	daddi r7, r7, 8
-;;	bnez r8, PRINT_LOOP
+
+printdouble:
+	lwu r11, CR(r0) ;; Control Register
+	lwu r12, DR(r0) ;; Data Register
+	daddi r10, r0, 3
+	daddi r7, r0, 0
+	ld r8, N_SAMPLES(r0)
+PRINT_LOOP:
+	l.d f1, result(r7)
+	s.d f1, (r12)   ;; output f0 .... 
+	sd r10, (r11)   ;; .... to screen
+	daddi r8, r8, -1
+	daddi r7, r7, 8
+	bnez r8, PRINT_LOOP
 	
 exit:
 	halt
