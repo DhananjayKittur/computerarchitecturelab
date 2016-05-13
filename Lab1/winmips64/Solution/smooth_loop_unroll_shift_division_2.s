@@ -5,14 +5,16 @@ N_SAMPLES: .word 30
 sample:	.double 68, 23, 27, 7, 46, 54, 66, 100, 44, 65, 52, 96, 50, 93, 4, 1, 25, 5, 33, 44, 79, 28, 64, 30, 92, 0, 98, 18, 50, 58
 result:		.double 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
-
 CR: .word32 0x10000
 DR:    .word32 0x10008
 
 		.text
 	ld r4, N_SAMPLES(r0)
 	ld r5, N_COEFFS(r0)
+	daddi r15, r0, 0
+	daddi r16, r0, 8
 	slt r6, r4, r5
+	daddi r17, r0, 16
 	;; sets 0 if r4 < r5 else sets 1
 	bnez r6, exit
 	;; SUBROUTINE STARTS HERE 
@@ -22,8 +24,10 @@ DR:    .word32 0x10008
 	;;
 	;;Check whether the coefficient is positive or negative
 	;;
-	daddi r7, r0, 0
-	l.d f1, coeff(r7)
+	;;daddi r7, r0, 0
+	l.d f1, coeff(r15)
+	l.d f2, coeff(r16)
+	l.d f3, coeff(r17)
 	c.lt.d f1, f0
 	bc1f COFF_1_POS
 	sub.d f4, f0, f1 ;; If f1<f0, then make f1 = -f1
@@ -32,8 +36,8 @@ COFF_1_POS:
 	add.d f4, f4, f1
 	;;
 COEFF_2:	
-	daddi r7, r7, 8
-	l.d f2, coeff(r7)
+	;;daddi r7, r7, 8
+	;;l.d f2, coeff(r7)
 	c.lt.d f2, f0
 	bc1f COFF_2_POS
 	sub.d f4, f4, f2
@@ -41,8 +45,8 @@ COEFF_2:
 COFF_2_POS:
 	add.d f4, f4, f2
 COEFF_3:
-	daddi r7, r7, 8
-	l.d f3, coeff(r7)
+	;;daddi r7, r7, 8
+	;;l.d f3, coeff(r7)
 	;; f4 is the sum of all the values that is norm
 	c.lt.d f3, f0
 	bc1f COFF_3_POS
@@ -61,28 +65,33 @@ SUMM_COEFF:
 	s.d f5, result(r0)
 	
 	daddi r7, r0, 0 ;;Set it to point to zeroth position of sample since for position 1 we need 0, 1, 2 for calculating
-	dadd r6, r0, r4 ;; r6 = Number of sample
-	daddi r6, r6, -2 ;; As we wont be considering first and last one
+	daddi r6, r4, -2 ;; As we wont be considering first and last one, r6 = Number of sample
 	l.d f6, sample(r7)
 	daddi r7, r7, 8
 	l.d f7, sample(r7)
 	daddi r7, r7,8
+	
+    ;; Needs major optimization since this is the loop and will execute multiple times here 
 outer_loop:	
 	
 	l.d f8, sample(r7)
 	mul.d f9, f1, f6
 	mul.d f10, f2, f7
 	mul.d f11, f3, f8
-	add.d f5, f9, f10
+	mov.d f5, f9
+	add.d f5, f5, f10
 	add.d f5, f5, f11
 	
+	daddi r7, r7, -8 
 	daddi r6, r6, -1 ;; Moved up so that the branch instruction doesnt have to wait for it
-	daddi r7, r7, -8
 	s.d f5, result(r7) ;;We will have to store in one place before the current pointer
 	daddi r7, r7, 16
 	mov.d f6, f7
 	mov.d f7, f8
+
 	bnez r6, outer_loop
+	
+	
 	;;Store the n-1th position
 	daddi r7, r7, -8
 	l.d f4, sample(r7)
