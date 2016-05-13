@@ -1,9 +1,9 @@
 	.data
 N_COEFFS:   .word 3
-coeff: 		.double -0.1, -0.5, -0.6
-N_SAMPLES: .word 46
-sample:	.double 46, 39, 4, 66, 83, 17, 77, 44, 46, 33, 40, 34, 79, 67, 37, 42, 75, 45, 45, 51, 97, 3, 3, 82, 80, 86, 18, 19, 61, 75, 99, 24, 80, 24, 93, 15, 65, 68, 77, 64, 33, 50, 51, 22, 41, 42
-result:		.double 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+coeff: 		.double -1.0, 1.0, -0.2
+N_SAMPLES: .word 30
+sample:	.double 68, 23, 27, 7, 46, 54, 66, 100, 44, 65, 52, 96, 50, 93, 4, 1, 25, 5, 33, 44, 79, 28, 64, 30, 92, 0, 98, 18, 50, 58
+result:		.double 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 
 CR: .word32 0x10000
@@ -76,10 +76,10 @@ outer_loop:
 	add.d f5, f9, f10
 	add.d f5, f5, f11
 	
+	daddi r6, r6, -1 ;; Moved up so that the branch instruction doesnt have to wait for it
 	daddi r7, r7, -8
 	s.d f5, result(r7) ;;We will have to store in one place before the current pointer
 	daddi r7, r7, 16
-	daddi r6, r6, -1
 	mov.d f6, f7
 	mov.d f7, f8
 	bnez r6, outer_loop
