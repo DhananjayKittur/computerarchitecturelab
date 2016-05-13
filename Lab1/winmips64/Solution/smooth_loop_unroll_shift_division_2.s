@@ -1,9 +1,9 @@
 	.data
 N_COEFFS:   .word 3
-coeff: 		.double -1.0, 1.0, -0.2
-N_SAMPLES: .word 30
-sample:	.double 68, 23, 27, 7, 46, 54, 66, 100, 44, 65, 52, 96, 50, 93, 4, 1, 25, 5, 33, 44, 79, 28, 64, 30, 92, 0, 98, 18, 50, 58
-result:		.double 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+coeff: 		.double -0.1, -0.5, -0.6
+N_SAMPLES: .word 46
+sample:	.double 46, 39, 4, 66, 83, 17, 77, 44, 46, 33, 40, 34, 79, 67, 37, 42, 75, 45, 45, 51, 97, 3, 3, 82, 80, 86, 18, 19, 61, 75, 99, 24, 80, 24, 93, 15, 65, 68, 77, 64, 33, 50, 51, 22, 41, 42
+result:		.double 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 
 CR: .word32 0x10000
@@ -20,7 +20,7 @@ DR:    .word32 0x10008
 	
 	;;Bring all the coefficient values to the registers.
 	;;
-	;;TODO: Check whether the coefficient is positive or negative
+	;;Check whether the coefficient is positive or negative
 	;;
 	daddi r7, r0, 0
 	l.d f1, coeff(r7)
@@ -88,19 +88,19 @@ outer_loop:
 	l.d f4, sample(r7)
 	s.d f4, result(r7)
 	
-printdouble:
-	lwu r11, CR(r0) ;; Control Register
-	lwu r12, DR(r0) ;; Data Register
-	daddi r10, r0, 3
-	daddi r7, r0, 0
-	ld r8, N_SAMPLES(r0)
-PRINT_LOOP:
-	l.d f1, result(r7)
-	s.d f1, (r12)   ;; output f0 .... 
-	sd r10, (r11)   ;; .... to screen
-	daddi r8, r8, -1
-	daddi r7, r7, 8
-	bnez r8, PRINT_LOOP
+;;printdouble:
+;;	lwu r11, CR(r0) ;; Control Register
+;;	lwu r12, DR(r0) ;; Data Register
+;;	daddi r10, r0, 3
+;;	daddi r7, r0, 0
+;;	ld r8, N_SAMPLES(r0)
+;;PRINT_LOOP:
+;;	l.d f1, result(r7)
+;;	s.d f1, (r12)   ;; output f0 .... 
+;;	sd r10, (r11)   ;; .... to screen
+;;	daddi r8, r8, -1
+;;	daddi r7, r7, 8
+;;	bnez r8, PRINT_LOOP
 	
 exit:
 	halt
