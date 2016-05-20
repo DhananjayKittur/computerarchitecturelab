@@ -30,9 +30,11 @@ DR:    .word32 0x10008
 	l.d f3, coeff(r17)
 	c.lt.d f1, f0
 	bc1f COFF_1_POS
+	nop
 	sub.d f4, f0, f1 ;; If f1<f0, then make f1 = -f1
 	j COEFF_2
 COFF_1_POS:
+	nop
 	add.d f4, f4, f1
 	;;
 COEFF_2:	
@@ -40,9 +42,11 @@ COEFF_2:
 	;;l.d f2, coeff(r7)
 	c.lt.d f2, f0
 	bc1f COFF_2_POS
+	nop
 	sub.d f4, f4, f2
 	j COEFF_3
 COFF_2_POS:
+	nop
 	add.d f4, f4, f2
 COEFF_3:
 	;;daddi r7, r7, 8
@@ -50,9 +54,11 @@ COEFF_3:
 	;; f4 is the sum of all the values that is norm
 	c.lt.d f3, f0
 	bc1f COFF_3_POS
+	nop
 	sub.d f4, f4, f3 ;;
 	j SUMM_COEFF
 COFF_3_POS:
+	nop
 	add.d f4, f4, f3
 SUMM_COEFF:
 	
@@ -74,41 +80,43 @@ SUMM_COEFF:
     ;; Needs major optimization since this is the loop and will execute multiple times here 
 outer_loop:	
 	
-	l.d f8, sample(r7)
 	mul.d f9, f1, f6
 	mul.d f10, f2, f7
+	l.d f8, sample(r7)
 	mul.d f11, f3, f8
 	add.d f5, f9, f10
 	mov.d f6, f7
 	mov.d f7, f8
 	add.d f5, f5, f11
 	
-	daddi r7, r7, -8 
+	daddi r7, r7, -8 ;; Normalize the space for storage
 	daddi r6, r6, -1 ;; Moved up so that the branch instruction doesnt have to wait for it
 	s.d f5, result(r7) ;;We will have to store in one place before the current pointer
-	daddi r7, r7, 16
+	daddi r7, r7, 16  ;; Normalize the space for loading the next data
 
 	bnez r6, outer_loop
 	
 	
 	;;Store the n-1th position
+	nop
 	daddi r7, r7, -8
 	l.d f4, sample(r7)
 	s.d f4, result(r7)
 
-;;printdouble:
-;;	lwu r11, CR(r0) ;; Control Register
-;;	lwu r12, DR(r0) ;; Data Register
-;;	daddi r10, r0, 3
-;;	daddi r7, r0, 0
-;;	ld r8, N_SAMPLES(r0)
-;;PRINT_LOOP:
-;;	l.d f1, result(r7)
-;;	s.d f1, (r12)   ;; output f0 .... 
-;;	sd r10, (r11)   ;; .... to screen
-;;	daddi r8, r8, -1
-;;	daddi r7, r7, 8
-;;	bnez r8, PRINT_LOOP
-	
+printdouble:
+	lwu r11, CR(r0) ;; Control Register
+	lwu r12, DR(r0) ;; Data Register
+	daddi r10, r0, 3
+	daddi r7, r0, 0
+	ld r8, N_SAMPLES(r0)
+PRINT_LOOP:
+	l.d f1, result(r7)
+	s.d f1, (r12)   ;; output f0 .... 
+	sd r10, (r11)   ;; .... to screen
+	daddi r8, r8, -1
+	daddi r7, r7, 8
+	bnez r8, PRINT_LOOP
+	nop
+;; printdouble ends	
 exit:
 	halt
