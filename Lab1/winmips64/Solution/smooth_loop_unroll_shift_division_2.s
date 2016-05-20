@@ -1,9 +1,9 @@
 	.data
 N_COEFFS:   .word 3
-coeff: 		.double -0.9, 1.0, -0.9
-N_SAMPLES: .word 12
-sample:	.double 92, 60, 23, 78, 78, 90, 29, 56, 51, 22, 24, 89
-result:		.double 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+coeff: 		.double 0.1, 0.4, -0.8
+N_SAMPLES: .word 43
+sample:	.double 28, 5, 34, 63, 78, 14, 61, 18, 19, 96, 100, 94, 8, 68, 55, 18, 86, 33, 57, 95, 44, 37, 84, 9, 49, 3, 62, 33, 39, 10, 93, 80, 78, 27, 75, 72, 77, 16, 42, 27, 15, 66, 52
+result:		.double 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 CR: .word32 0x10000
 DR:    .word32 0x10008
@@ -75,24 +75,59 @@ SUMM_COEFF:
 	l.d f6, sample(r7)
 	daddi r7, r7, 8
 	l.d f7, sample(r7)
-	daddi r7, r7,8
-	
-    ;; Needs major optimization since this is the loop and will execute multiple times here 
-outer_loop:	
-	
-	mul.d f9, f1, f6
-	mul.d f10, f2, f7
+	daddi r7, r7, 8
+	andi r8, r6, 1
+	beq r8, r0, outer_loop
+	;;Handle for the odd case
 	l.d f8, sample(r7)
-	mul.d f11, f3, f8
-	add.d f5, f9, f10
+	mul.d f10, f1, f6
+	mul.d f11, f2, f7
+	mul.d f12, f3, f8
+	add.d f16, f10, f11
+	add.d f16, f16, f12
+	daddi r7, r7, -8
+	s.d f16, result(r7)
+	daddi r7, r7, 16
 	mov.d f6, f7
 	mov.d f7, f8
-	add.d f5, f5, f11
+	daddi r6, r6, -1
+	beqz r6, printdouble ;; Change it to exit while submitting
 	
-	daddi r7, r7, -8 ;; Normalize the space for storage
-	daddi r6, r6, -1 ;; Moved up so that the branch instruction doesnt have to wait for it
-	s.d f5, result(r7) ;;We will have to store in one place before the current pointer
-	daddi r7, r7, 16  ;; Normalize the space for loading the next data
+    ;; Needs major optimization since this is the loop and will execute multiple times here 
+	;; Loading should be done from n+2 and storage should be done in n so 16 addition is needed to move it ahead and -8 while storage
+	
+	;;Consider for odd cases later on
+outer_loop:	
+	
+	;;daddi r7, r7, 16  ;; Normalize the space for loading the next data
+	
+	l.d f8, sample(r7)
+	daddi r7, r7, 8
+	l.d f9, sample(r7)
+	mul.d f10, f1, f6
+	mul.d f11, f2, f7
+	mul.d f12, f3, f8
+	
+	mul.d f13, f1, f7
+	mul.d f14, f2, f8
+	mul.d f15, f3, f9
+	
+	add.d f16, f10, f11
+	
+	daddi r7, r7, -16 ;; Normalize the space for storage
+	add.d f17, f13, f14
+	
+	add.d f16, f16, f12
+	
+	daddi r6, r6, -2 ;; Moved up so that the branch instruction doesnt have to wait for it
+	add.d f17, f17, f15
+	
+	s.d f16, result(r7) ;;We will have to store in one place before the current pointer
+	daddi r7, r7, 8
+	s.d f17, result(r7)
+	mov.d f6, f8
+	mov.d f7, f9
+	daddi r7, r7, 16
 
 	bnez r6, outer_loop
 	
@@ -117,6 +152,6 @@ PRINT_LOOP:
 	daddi r7, r7, 8
 	bnez r8, PRINT_LOOP
 	nop
-;; printdouble ends	
+;;printdouble ends	
 exit:
 	halt
