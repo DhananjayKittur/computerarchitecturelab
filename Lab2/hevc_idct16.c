@@ -135,32 +135,22 @@ static void partialButterflyInverse16(short *src, short *dst, int shift)
 static void partialButterflyInverse16_simd(short *src, short *dst, int shift)
 {
   int E[8],O[8] __attribute__((aligned(16)));
-  int EE[4],EO[4];
-  int EEE[2],EEO[2];
+  int EE[4],EO[4] __attribute__((aligned(16)));
+  int EEE[2],EEO[2] __attribute__((aligned(16)));
   int add = 1<<(shift-1);
 
-  short tmp_src[8] __attribute__((aligned(16)));
-  int tmp_src1[4] __attribute__((aligned(16)));
   int temp_output[8] __attribute__((aligned(16)));
   int temp_output1[4] __attribute__((aligned(16)));
 
+#if 1
+  __m128i const_vector_arr[8];
 
-  int EO_g[4] __attribute__((aligned(16)));
-
-#if 0 //Contigent in optimization level 0 algo two works ??
-  short ps8O_g[8][8];
     for( int k=0; k<8; k++ ) {
-        ps8O_g[k][0] = g_aiT16[ 1][k];
-        ps8O_g[k][1] = g_aiT16[ 3][k];
-        ps8O_g[k][2] = g_aiT16[ 5][k];
-        ps8O_g[k][3] = g_aiT16[ 7][k];
-        ps8O_g[k][4] = g_aiT16[ 9][k];
-        ps8O_g[k][5] = g_aiT16[ 11][k];
-        ps8O_g[k][6] = g_aiT16[ 13][k];
-        ps8O_g[k][7] = g_aiT16[ 15][k];
+        const_vector_arr[k] = _mm_set_epi16(g_aiT16[15][k], g_aiT16[13][k], g_aiT16[11][k], g_aiT16[9][k], 
+          g_aiT16[7][k], g_aiT16[5][k], g_aiT16[3][k], g_aiT16[1][k]);
     }
-
 #endif
+
   for (int j=0; j<16; j++)
   {
     /* Utilizing symmetry properties to the maximum to minimize the number of multiplications */
@@ -169,13 +159,13 @@ static void partialButterflyInverse16_simd(short *src, short *dst, int shift)
     //Test phase begins
     __m128i src_vector;
     __m128i const_vector;
+
+
+    src_vector = _mm_set_epi16(*(src+240), *(src+208), *(src+176), *(src+144), *(src+112), 
+      *(src+80), *(src+48), *(src+16));
+  #if 0
     __m128i lo_out[8];
     __m128i hi_out[8];
-    __m128i *pu128iPtr;
-
-
-    src_vector = _mm_set_epi16(*(src+240), *(src+208), *(src+176), *(src+144), *(src+112), *(src+80), *(src+48), *(src+16));
-  #if 0
     for( int k=0; k<8; k++ ) {
       const_vector = *(__m128i *) &g_aiT16[k*2+1][0];
       lo_out[k] = _mm_mullo_epi16 (const_vector, src_vector);
@@ -195,10 +185,8 @@ static void partialButterflyInverse16_simd(short *src, short *dst, int shift)
     //const_vector = *(__m128i *) ps8O_g;
 
     for( int k=0; k<8; k++ ) {
-        const_vector = _mm_set_epi16(g_aiT16[15][k], g_aiT16[13][k], g_aiT16[11][k], g_aiT16[9][k], 
-          g_aiT16[7][k], g_aiT16[5][k], g_aiT16[3][k], g_aiT16[1][k]);
-       *(__m128i *) temp_output1  = _mm_madd_epi16 ( const_vector, src_vector );
-      O[k] = temp_output1[0] + temp_output1[1] + temp_output1[2] + temp_output1[3];
+       *(__m128i *) temp_output1  = _mm_madd_epi16 ( const_vector_arr[k], src_vector );
+       O[k] = temp_output1[0] + temp_output1[1] + temp_output1[2] + temp_output1[3];
     }
   #else
 
@@ -215,27 +203,19 @@ static void partialButterflyInverse16_simd(short *src, short *dst, int shift)
   /*************************** Optimization LEVEL 1 Begins *******************************************************/
 #if 0
     //Test phase begins (This portion is not optimizing rather is very costly)
-    
-    tmp_src1[0] = *(src+32);
-    tmp_src1[1] = *(src+96);
-    tmp_src1[2] = *(src+160);
-    tmp_src1[3] = *(src+224);
-    src_vector = *(__m128i *)tmp_src1;
+    src_vector = _mm_set_epi16(*(src+14*16), *(src+10*16), *(src+6*16), *(src+2*16), *(src+14*16), 
+      *(src+10*16), *(src+6*16), *(src+2*16));
+    const_vector = _mm_set_epi16( g_aiT16[14][1], g_aiT16[10][1], g_aiT16[6][1], g_aiT16[2][1], 
+            g_aiT16[14][0], g_aiT16[10][0], g_aiT16[6][0], g_aiT16[2][0]);
+    *(__m128i *) temp_output1  = _mm_madd_epi16 ( const_vector, src_vector );
+    EO[0] = temp_output1[0] + temp_output1[1];
+    EO[1] = temp_output1[2] + temp_output1[3];
 
-    for (int k=0; k<4; k++)
-    {
-      //EO_g[0] = g_aiT16[2][k];
-      //EO_g[1] = g_aiT16[6][k];
-      //EO_g[2] = g_aiT16[10][k];
-      //EO_g[3] = g_aiT16[14][k];
-
-      //*(__m128i *) temp_output1 =  _mm_mullo_epi32 (*(__m128i *)EO_g, src_vector);
-      *(__m128i *) temp_output1 =  _mm_mullo_epi32 ((__m128i )EO_g, src_vector);
-
-
-      EO[k] = temp_output1[0] + temp_output1[1] + temp_output1[2] + temp_output1[3];
-    }
-    
+    const_vector = _mm_set_epi16( g_aiT16[14][3], g_aiT16[10][3], g_aiT16[6][3], g_aiT16[2][3], 
+            g_aiT16[14][2], g_aiT16[10][2], g_aiT16[6][2], g_aiT16[2][2]);
+    *(__m128i *) temp_output1  = _mm_madd_epi16 ( const_vector, src_vector );
+    EO[2] = temp_output1[0] + temp_output1[1];
+    EO[3] = temp_output1[2] + temp_output1[3];
     //Test phase ends
 #else
     for (int k=0; k<4; k++)
@@ -247,11 +227,31 @@ static void partialButterflyInverse16_simd(short *src, short *dst, int shift)
     /*************************** Optimization LEVEL 1 Ends *******************************************************/
 
     /*************************** Optimization LEVEL 2 *******************************************************/
+  #if 0
+    src_vector = _mm_set_epi16(*(src+8*16), *(src), *(src+12*16), *(src+4*16), *(src+8*16), 
+      *(src), *(src+12*16), *(src+4*16));
+    const_vector = _mm_set_epi16(g_aiT16[8][1], g_aiT16[0][1], g_aiT16[12][1], g_aiT16[4][1], 
+          g_aiT16[8][0], g_aiT16[0][0], g_aiT16[12][0], g_aiT16[4][0]);
+    *(__m128i *) temp_output1  = _mm_madd_epi16 ( const_vector, src_vector );
+    EEO[0] = temp_output1[0];
+    EEE[0] = temp_output1[1];
+    EEO[1] = temp_output1[2];
+    EEE[1] = temp_output1[3];
+    for (int k=0; k<2; k++)
+    {
+      EE[k] = EEE[k] + EEO[k];
+      EE[k+2] = EEE[1-k] - EEO[1-k];
+    }
+    for (int k=0; k<4; k++)
+    {
+      E[k] = EE[k] + EO[k];
+      E[k+4] = EE[3-k] - EO[3-k];
+    }
+  #else
     EEO[0] = g_aiT16[4][0]*src[ 4*16 ] + g_aiT16[12][0]*src[ 12*16 ];
     EEE[0] = g_aiT16[0][0]*src[ 0    ] + g_aiT16[ 8][0]*src[  8*16 ];
     EEO[1] = g_aiT16[4][1]*src[ 4*16 ] + g_aiT16[12][1]*src[ 12*16 ];
     EEE[1] = g_aiT16[0][1]*src[ 0    ] + g_aiT16[ 8][1]*src[  8*16 ];
-
     /* Combining even and odd terms at each hierarchy levels to calculate the final spatial domain vector */
     for (int k=0; k<2; k++)
     {
@@ -264,6 +264,7 @@ static void partialButterflyInverse16_simd(short *src, short *dst, int shift)
       E[k+4] = EE[3-k] - EO[3-k];
     }
 
+#endif
     /*************************** Optimization LEVEL 2 Ends *******************************************************/
 
     /*************************** Optimization LEVEL 3 Begin *******************************************************/
