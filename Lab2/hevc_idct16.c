@@ -566,7 +566,7 @@ static void partialButterflyInverse16_simd2(short *src, short *orig_dst, int shi
 //scalar code for the inverse transform
 static void partialButterflyInverse16_simd3(short *src, short *orig_dst, int shift1, int shift2 )
 {
-  int E[8],O[8] __attribute__((aligned(16)));
+  int E[8],O[8][8] __attribute__((aligned(16)));
   int EE[4],EO[4] __attribute__((aligned(16)));
   int EEE[2],EEO[2] __attribute__((aligned(16)));
   int add = 1<<(shift1-1);
@@ -579,13 +579,7 @@ static void partialButterflyInverse16_simd3(short *src, short *orig_dst, int shi
   __m128i const_vector;
 
 #if 1 //For Optimization Level 0
-  __m128i const_vector_arr[8];
-#if 0
-    for( int k=0; k<8; k++ ) {
-        const_vector_arr[k] = _mm_set_epi16(g_aiT16[15][k], g_aiT16[13][k], g_aiT16[11][k], g_aiT16[9][k], 
-          g_aiT16[7][k], g_aiT16[5][k], g_aiT16[3][k], g_aiT16[1][k]);
-    }
-#endif
+  __m128i const_vector_arr[8], src_vector_arr[8];
 
 
 
@@ -727,6 +721,35 @@ static void partialButterflyInverse16_simd3(short *src, short *orig_dst, int shi
     printf("\n");
   }
 #endif
+
+
+#if 1 //For the optimization level 1
+  __m128i const_vector_arr_1[2];
+  *(__m64 *)&I0 = *(__m64 *)&g_aiT16[2][0];
+  ((__m64 *)&I0)[1] =  *(__m64 *) &g_aiT16[10][0];
+  *(__m64 *)&I1 = *(__m64 *)&g_aiT16[6][0];
+  ((__m64 *)&I1)[1] =  *(__m64 *) &g_aiT16[14][0];
+
+  T0 = _mm_unpacklo_epi16(I0, I1);
+  T1 = _mm_unpackhi_epi16(I0, I1);
+
+  const_vector_arr_1[0] = _mm_unpacklo_epi32(T0, T1);
+  const_vector_arr_1[1] = _mm_unpackhi_epi32(T0, T1);
+#if 0
+  printf("\nFor step 0\n");
+      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&T0)[0], ((short*)&T0)[1], ((short*)&T0)[2], ((short*)&T0)[3],
+      ((short*)&T0)[4], ((short*)&T0)[5], ((short*)&T0)[6], ((short*)&T0)[7] );
+      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&T1)[0], ((short*)&T1)[1], ((short*)&T1)[2], ((short*)&T1)[3],
+      ((short*)&T1)[4], ((short*)&T1)[5], ((short*)&T1)[6], ((short*)&T1)[7] );
+  printf("\nFor step 1\n");
+      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I0)[0], ((short*)&I0)[1], ((short*)&I0)[2], ((short*)&I0)[3],
+      ((short*)&I0)[4], ((short*)&I0)[5], ((short*)&I0)[6], ((short*)&I0)[7] );
+      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I1)[0], ((short*)&I1)[1], ((short*)&I1)[2], ((short*)&I1)[3],
+      ((short*)&I1)[4], ((short*)&I1)[5], ((short*)&I1)[6], ((short*)&I1)[7] );
+
+  return;
+#endif
+#endif
 #endif
 
   for (int j=0; j<16; j++)
@@ -735,24 +758,110 @@ static void partialButterflyInverse16_simd3(short *src, short *orig_dst, int shi
 
     /*************************** Optimization LEVEL 0 *******************************************************/
     //Test phase begins
+#if 0
     src_vector = _mm_set_epi16(*(src+240), *(src+208), *(src+176), *(src+144), *(src+112), 
       *(src+80), *(src+48), *(src+16));
+#endif
 
 
+
+    I0 = _mm_load_si128((__m128i*)&src[16]);
+    I1 = _mm_load_si128((__m128i*)&src[48]);
+    I2 = _mm_load_si128((__m128i*)&src[80]);
+    I3 = _mm_load_si128((__m128i*)&src[112]);
+    I4 = _mm_load_si128((__m128i*)&src[144]);
+    I5 = _mm_load_si128((__m128i*)&src[176]);
+    I6 = _mm_load_si128((__m128i*)&src[208]);
+    I7 = _mm_load_si128((__m128i*)&src[240]);
+
+    T0 = _mm_unpacklo_epi16(I0, I1);
+    T1 = _mm_unpackhi_epi16(I0, I1);
+    T2 = _mm_unpacklo_epi16(I2, I3);
+    T3 = _mm_unpackhi_epi16(I2, I3);
+    T4 = _mm_unpacklo_epi16(I4, I5);
+    T5 = _mm_unpackhi_epi16(I4, I5);
+    T6 = _mm_unpacklo_epi16(I6, I7);
+    T7 = _mm_unpackhi_epi16(I6, I7);
+
+    I0 = _mm_unpacklo_epi32(T0, T2);
+    I1 = _mm_unpackhi_epi32(T0, T2);
+    I2 = _mm_unpacklo_epi32(T1, T3);
+    I3 = _mm_unpackhi_epi32(T1, T3);
+    I4 = _mm_unpacklo_epi32(T4, T6);
+    I5 = _mm_unpackhi_epi32(T4, T6);
+    I6 = _mm_unpacklo_epi32(T5, T7);
+    I7 = _mm_unpackhi_epi32(T5, T7);
+
+    src_vector_arr[0] = _mm_unpacklo_epi64(I0, I4);
+    src_vector_arr[1] = _mm_unpackhi_epi64(I0, I4);
+    src_vector_arr[2] = _mm_unpacklo_epi64(I1, I5);
+    src_vector_arr[3] = _mm_unpackhi_epi64(I1, I5);
+    src_vector_arr[4] = _mm_unpacklo_epi64(I2, I6);
+    src_vector_arr[5] = _mm_unpackhi_epi64(I2, I6);
+    src_vector_arr[6] = _mm_unpacklo_epi64(I3, I7);
+    src_vector_arr[7] = _mm_unpackhi_epi64(I3, I7);
     //const_vector = *(__m128i *) ps8O_g;
 
     for( int k=0; k<8; k++ ) {
-       *(__m128i *) temp_output1  = _mm_madd_epi16 ( const_vector_arr[k], src_vector );
-       O[k] = temp_output1[0] + temp_output1[1] + temp_output1[2] + temp_output1[3];
+       *(__m128i *) temp_output1  = _mm_madd_epi16 ( const_vector_arr[k], src_vector_arr[0] );
+       O[0][k] = temp_output1[0] + temp_output1[1] + temp_output1[2] + temp_output1[3];
+
+       *(__m128i *) temp_output1  = _mm_madd_epi16 ( const_vector_arr[k], src_vector_arr[1] );
+       O[1][k] = temp_output1[0] + temp_output1[1] + temp_output1[2] + temp_output1[3];
+
+       *(__m128i *) temp_output1  = _mm_madd_epi16 ( const_vector_arr[k], src_vector_arr[2] );
+       O[2][k] = temp_output1[0] + temp_output1[1] + temp_output1[2] + temp_output1[3];
+
+       *(__m128i *) temp_output1  = _mm_madd_epi16 ( const_vector_arr[k], src_vector_arr[3] );
+       O[3][k] = temp_output1[0] + temp_output1[1] + temp_output1[2] + temp_output1[3];
+
+       *(__m128i *) temp_output1  = _mm_madd_epi16 ( const_vector_arr[k], src_vector_arr[4] );
+       O[4][k] = temp_output1[0] + temp_output1[1] + temp_output1[2] + temp_output1[3];
+
+       *(__m128i *) temp_output1  = _mm_madd_epi16 ( const_vector_arr[k], src_vector_arr[5] );
+       O[5][k] = temp_output1[0] + temp_output1[1] + temp_output1[2] + temp_output1[3];
+
+       *(__m128i *) temp_output1  = _mm_madd_epi16 ( const_vector_arr[k], src_vector_arr[6] );
+       O[6][k] = temp_output1[0] + temp_output1[1] + temp_output1[2] + temp_output1[3];
+
+       *(__m128i *) temp_output1  = _mm_madd_epi16 ( const_vector_arr[k], src_vector_arr[7] );
+       O[7][k] = temp_output1[0] + temp_output1[1] + temp_output1[2] + temp_output1[3];
     }
   /*************************** Optimization LEVEL 0 Ends *******************************************************/
 
   /*************************** Optimization LEVEL 1 Begins *******************************************************/
+
+#if 0
+    //Test phase begins (This portion is not optimizing rather is very costly)
+
+    //Complete it tomorrow morning ?????????????/
+    I0 = _mm_load_si128((__m128i*)&src[32]);
+    I1 = _mm_load_si128((__m128i*)&src[96]);
+    I2 = _mm_load_si128((__m128i*)&src[160]);
+    I3 = _mm_load_si128((__m128i*)&src[224]);
+    I4 = _mm_load_si128((__m128i*)&src[32]);
+    I5 = _mm_load_si128((__m128i*)&src[96]);
+    I6 = _mm_load_si128((__m128i*)&src[160]);
+    I7 = _mm_load_si128((__m128i*)&src[224]);
+
+
+    src_vector = _mm_set_epi16(*(src+14*16), *(src+10*16), *(src+6*16), *(src+2*16), *(src+14*16), 
+      *(src+10*16), *(src+6*16), *(src+2*16));
+    *(__m128i *) temp_output1  = _mm_madd_epi16 ( const_vector_arr_1[0], src_vector );
+    EO[0] = temp_output1[0] + temp_output1[1];
+    EO[1] = temp_output1[2] + temp_output1[3];
+
+    *(__m128i *) temp_output1  = _mm_madd_epi16 ( const_vector_arr_1[1], src_vector );
+    EO[2] = temp_output1[0] + temp_output1[1];
+    EO[3] = temp_output1[2] + temp_output1[3];
+    //Test phase ends
+#else
     for (int k=0; k<4; k++)
     {
 
       EO[k] = g_aiT16[ 2][k]*src[ 2*16] + g_aiT16[ 6][k]*src[ 6*16] + g_aiT16[10][k]*src[10*16] + g_aiT16[14][k]*src[14*16];
     }
+#endif
     /*************************** Optimization LEVEL 1 Ends *******************************************************/
 
     /*************************** Optimization LEVEL 2 *******************************************************/
@@ -806,97 +915,6 @@ static void partialButterflyInverse16_simd3(short *src, short *orig_dst, int shi
     s128Var4 = _mm_add_epi32( s128Var2, s12AddVec );
     s128Var5 = _mm_srai_epi32 ( s128Var3, shift1 );
     s128Var6 = _mm_srai_epi32 ( s128Var4, shift1 );
-    s128Var7 = _mm_packs_epi32(s128Var5, s128Var6 );
-
-     *(__m64 *)&dst[12] = _mm_shuffle_pi16 ( *(__m64 *)&s128Var7, 27 );
-     *(__m64 *)&dst[8] = _mm_shuffle_pi16 ( *(__m64 *)&s128Var7[1], 27 );
-/*************************** Optimization LEVEL 3 Ends *******************************************************/
-    src ++;
-    dst += 16;
-  }
-
-
-  src = tmp;
-  dst = orig_dst;
-  add = 1<<(shift2-1);
-  for (int j=0; j<16; j++)
-  {
-    /* Utilizing symmetry properties to the maximum to minimize the number of multiplications */
-
-    /*************************** Optimization LEVEL 0 *******************************************************/
-    //Test phase begins
-
-
-    src_vector = _mm_set_epi16(*(src+240), *(src+208), *(src+176), *(src+144), *(src+112), 
-      *(src+80), *(src+48), *(src+16));
-
-
-    //const_vector = *(__m128i *) ps8O_g;
-
-    for( int k=0; k<8; k++ ) {
-       *(__m128i *) temp_output1  = _mm_madd_epi16 ( const_vector_arr[k], src_vector );
-       O[k] = temp_output1[0] + temp_output1[1] + temp_output1[2] + temp_output1[3];
-    }
-  /*************************** Optimization LEVEL 0 Ends *******************************************************/
-
-  /*************************** Optimization LEVEL 1 Begins *******************************************************/
-    for (int k=0; k<4; k++)
-    {
-      EO[k] = g_aiT16[ 2][k]*src[ 2*16] + g_aiT16[ 6][k]*src[ 6*16] + g_aiT16[10][k]*src[10*16] + g_aiT16[14][k]*src[14*16];
-    }
-    /*************************** Optimization LEVEL 1 Ends *******************************************************/
-
-    /*************************** Optimization LEVEL 2 *******************************************************/
-    EEO[0] = g_aiT16[4][0]*src[ 4*16 ] + g_aiT16[12][0]*src[ 12*16 ];
-    EEE[0] = g_aiT16[0][0]*src[ 0    ] + g_aiT16[ 8][0]*src[  8*16 ];
-    EEO[1] = g_aiT16[4][1]*src[ 4*16 ] + g_aiT16[12][1]*src[ 12*16 ];
-    EEE[1] = g_aiT16[0][1]*src[ 0    ] + g_aiT16[ 8][1]*src[  8*16 ];
-    /* Combining even and odd terms at each hierarchy levels to calculate the final spatial domain vector */
-    for (int k=0; k<2; k++)
-    {
-      EE[k] = EEE[k] + EEO[k];
-      EE[k+2] = EEE[1-k] - EEO[1-k];
-    }
-    for (int k=0; k<4; k++)
-    {
-      E[k] = EE[k] + EO[k];
-      E[k+4] = EE[3-k] - EO[3-k];
-    }
-    /*************************** Optimization LEVEL 2 Ends *******************************************************/
-
-    /*************************** Optimization LEVEL 3 Begin *******************************************************/
-    __m128i s128Var1, s128Var2, s128Var3, s128Var4, s128Var5, s128Var6, s128Var7, s12AddVec;
-
-    s128Var1 = _mm_add_epi32( *(__m128i *) E, *(__m128i *) O);
-    s128Var2 = _mm_add_epi32( *(__m128i *) &E[4], *(__m128i *) &O[4]);
-
-
-    s12AddVec = _mm_set1_epi32(add);
-
-
-
-    s128Var3 = _mm_add_epi32( s128Var1, s12AddVec );
-    s128Var4 = _mm_add_epi32( s128Var2, s12AddVec );
-    s128Var5 = _mm_srai_epi32 ( s128Var3, shift2 );
-    s128Var6 = _mm_srai_epi32 ( s128Var4, shift2 );
-    s128Var1 = _mm_packs_epi32(s128Var5, s128Var6 );
-    //*(__m128i *) dst = _mm_packs_epi32(s128Var5, s128Var6 );
-
-    _mm_store_si128( (__m128i *)dst, s128Var1);
-
-    //This one is for subtraction
-    s128Var1 = _mm_sub_epi32( *(__m128i *) E, *(__m128i *) O);
-    s128Var2 = _mm_sub_epi32( *(__m128i *) &E[4], *(__m128i *) &O[4]);
-
-
-    s12AddVec = _mm_set1_epi32(add);
-
-
-
-    s128Var3 = _mm_add_epi32( s128Var1, s12AddVec );
-    s128Var4 = _mm_add_epi32( s128Var2, s12AddVec );
-    s128Var5 = _mm_srai_epi32 ( s128Var3, shift2 );
-    s128Var6 = _mm_srai_epi32 ( s128Var4, shift2 );
     s128Var7 = _mm_packs_epi32(s128Var5, s128Var6 );
 
      *(__m64 *)&dst[12] = _mm_shuffle_pi16 ( *(__m64 *)&s128Var7, 27 );
