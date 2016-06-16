@@ -571,7 +571,7 @@ static void partialButterflyInverse16_simd2(short *src, short *orig_dst, int shi
 
 
 //scalar code for the inverse transform
-static void partialButterflyInverse16_simd3(short *src, short *dst, int shift1, int shift2 )
+static void partialButterflyInverse16_simd3(short *src, short *dst, int shift1 )
 {
   int E[8][8],O[8][8] __attribute__((aligned(16)));
   int EE[8][4],EO[8][4] __attribute__((aligned(16)));
@@ -607,47 +607,6 @@ static void partialButterflyInverse16_simd3(short *src, short *dst, int shift1, 
   __m128i T5 = _mm_unpackhi_epi16(I4, I5);
   __m128i T6 = _mm_unpacklo_epi16(I6, I7);
   __m128i T7 = _mm_unpackhi_epi16(I6, I7);
-#if 0
-  printf("\nStep 0\n");
-  for( int n=0; n<1; n++ ) {
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I0)[0], ((short*)&I0)[1], ((short*)&I0)[2], ((short*)&I0)[3],
-      ((short*)&I0)[4], ((short*)&I0)[5], ((short*)&I0)[6], ((short*)&I0)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I1)[0], ((short*)&I1)[1], ((short*)&I1)[2], ((short*)&I1)[3],
-      ((short*)&I1)[4], ((short*)&I1)[5], ((short*)&I1)[6], ((short*)&I1)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I2)[0], ((short*)&I2)[1], ((short*)&I2)[2], ((short*)&I2)[3],
-      ((short*)&I2)[4], ((short*)&I2)[5], ((short*)&I2)[6], ((short*)&I2)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I3)[0], ((short*)&I3)[1], ((short*)&I3)[2], ((short*)&I3)[3],
-      ((short*)&I3)[4], ((short*)&I3)[5], ((short*)&I3)[6], ((short*)&I3)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I4)[0], ((short*)&I4)[1], ((short*)&I4)[2], ((short*)&I4)[3],
-      ((short*)&I4)[4], ((short*)&I4)[5], ((short*)&I4)[6], ((short*)&I4)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I5)[0], ((short*)&I5)[1], ((short*)&I5)[2], ((short*)&I5)[3],
-      ((short*)&I5)[4], ((short*)&I5)[5], ((short*)&I5)[6], ((short*)&I5)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I6)[0], ((short*)&I6)[1], ((short*)&I6)[2], ((short*)&I6)[3],
-      ((short*)&I6)[4], ((short*)&I6)[5], ((short*)&I6)[6], ((short*)&I6)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I7)[0], ((short*)&I7)[1], ((short*)&I7)[2], ((short*)&I7)[3],
-      ((short*)&I7)[4], ((short*)&I7)[5], ((short*)&I7)[6], ((short*)&I7)[7] );
-  }
-  printf("\nStep 1\n");
-  for( int n=0; n<1; n++ ) {
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&T0)[0], ((short*)&T0)[1], ((short*)&T0)[2], ((short*)&T0)[3],
-      ((short*)&T0)[4], ((short*)&T0)[5], ((short*)&T0)[6], ((short*)&T0)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&T1)[0], ((short*)&T1)[1], ((short*)&T1)[2], ((short*)&T1)[3],
-      ((short*)&T1)[4], ((short*)&T1)[5], ((short*)&T1)[6], ((short*)&T1)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&T2)[0], ((short*)&T2)[1], ((short*)&T2)[2], ((short*)&T2)[3],
-      ((short*)&T2)[4], ((short*)&T2)[5], ((short*)&T2)[6], ((short*)&T2)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&T3)[0], ((short*)&T3)[1], ((short*)&T3)[2], ((short*)&T3)[3],
-      ((short*)&T3)[4], ((short*)&T3)[5], ((short*)&T3)[6], ((short*)&T3)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&T4)[0], ((short*)&T4)[1], ((short*)&T4)[2], ((short*)&T4)[3],
-      ((short*)&T4)[4], ((short*)&T4)[5], ((short*)&T4)[6], ((short*)&T4)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&T5)[0], ((short*)&T5)[1], ((short*)&T5)[2], ((short*)&T5)[3],
-      ((short*)&T5)[4], ((short*)&T5)[5], ((short*)&T5)[6], ((short*)&T5)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&T6)[0], ((short*)&T6)[1], ((short*)&T6)[2], ((short*)&T6)[3],
-      ((short*)&T6)[4], ((short*)&T6)[5], ((short*)&T6)[6], ((short*)&T6)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&T7)[0], ((short*)&T7)[1], ((short*)&T7)[2], ((short*)&T7)[3],
-      ((short*)&T7)[4], ((short*)&T7)[5], ((short*)&T7)[6], ((short*)&T7)[7] );
-    printf("\n");
-  }
-#endif
   I0 = _mm_unpacklo_epi32(T0, T2);
   I1 = _mm_unpackhi_epi32(T0, T2);
   I2 = _mm_unpacklo_epi32(T1, T3);
@@ -656,27 +615,6 @@ static void partialButterflyInverse16_simd3(short *src, short *dst, int shift1, 
   I5 = _mm_unpackhi_epi32(T4, T6);
   I6 = _mm_unpacklo_epi32(T5, T7);
   I7 = _mm_unpackhi_epi32(T5, T7);
-#if 0
-  printf("\nTransposed 0\n");
-  for( int n=0; n<1; n++ ) {
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I0)[0], ((short*)&I0)[1], ((short*)&I0)[2], ((short*)&I0)[3],
-      ((short*)&I0)[4], ((short*)&I0)[5], ((short*)&I0)[6], ((short*)&I0)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I1)[0], ((short*)&I1)[1], ((short*)&I1)[2], ((short*)&I1)[3],
-      ((short*)&I1)[4], ((short*)&I1)[5], ((short*)&I1)[6], ((short*)&I1)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I2)[0], ((short*)&I2)[1], ((short*)&I2)[2], ((short*)&I2)[3],
-      ((short*)&I2)[4], ((short*)&I2)[5], ((short*)&I2)[6], ((short*)&I2)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I3)[0], ((short*)&I3)[1], ((short*)&I3)[2], ((short*)&I3)[3],
-      ((short*)&I3)[4], ((short*)&I3)[5], ((short*)&I3)[6], ((short*)&I3)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I4)[0], ((short*)&I4)[1], ((short*)&I4)[2], ((short*)&I4)[3],
-      ((short*)&I4)[4], ((short*)&I4)[5], ((short*)&I4)[6], ((short*)&I4)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I5)[0], ((short*)&I5)[1], ((short*)&I5)[2], ((short*)&I5)[3],
-      ((short*)&I5)[4], ((short*)&I5)[5], ((short*)&I5)[6], ((short*)&I5)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I6)[0], ((short*)&I6)[1], ((short*)&I6)[2], ((short*)&I6)[3],
-      ((short*)&I6)[4], ((short*)&I6)[5], ((short*)&I6)[6], ((short*)&I6)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I7)[0], ((short*)&I7)[1], ((short*)&I7)[2], ((short*)&I7)[3],
-      ((short*)&I7)[4], ((short*)&I7)[5], ((short*)&I7)[6], ((short*)&I7)[7] );
-  }
-#endif
   const_vector_arr[0] = _mm_unpacklo_epi64(I0, I4);
   const_vector_arr[1] = _mm_unpackhi_epi64(I0, I4);
   const_vector_arr[2] = _mm_unpacklo_epi64(I1, I5);
@@ -685,49 +623,6 @@ static void partialButterflyInverse16_simd3(short *src, short *dst, int shift1, 
   const_vector_arr[5] = _mm_unpackhi_epi64(I2, I6);
   const_vector_arr[6] = _mm_unpacklo_epi64(I3, I7);
   const_vector_arr[7] = _mm_unpackhi_epi64(I3, I7);
-#if 0
-  printf("\nTransposed 1\n");
-  for( int n=0; n<1; n++ ) {
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&T0)[0], ((short*)&T0)[1], ((short*)&T0)[2], ((short*)&T0)[3],
-      ((short*)&T0)[4], ((short*)&T0)[5], ((short*)&T0)[6], ((short*)&T0)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&T1)[0], ((short*)&T1)[1], ((short*)&T1)[2], ((short*)&T1)[3],
-      ((short*)&T1)[4], ((short*)&T1)[5], ((short*)&T1)[6], ((short*)&T1)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&T2)[0], ((short*)&T2)[1], ((short*)&T2)[2], ((short*)&T2)[3],
-      ((short*)&T2)[4], ((short*)&T2)[5], ((short*)&T2)[6], ((short*)&T2)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&T3)[0], ((short*)&T3)[1], ((short*)&T3)[2], ((short*)&T3)[3],
-      ((short*)&T3)[4], ((short*)&T3)[5], ((short*)&T3)[6], ((short*)&T3)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&T4)[0], ((short*)&T4)[1], ((short*)&T4)[2], ((short*)&T4)[3],
-      ((short*)&T4)[4], ((short*)&T4)[5], ((short*)&T4)[6], ((short*)&T4)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&T5)[0], ((short*)&T5)[1], ((short*)&T5)[2], ((short*)&T5)[3],
-      ((short*)&T5)[4], ((short*)&T5)[5], ((short*)&T5)[6], ((short*)&T5)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&T6)[0], ((short*)&T6)[1], ((short*)&T6)[2], ((short*)&T6)[3],
-      ((short*)&T6)[4], ((short*)&T6)[5], ((short*)&T6)[6], ((short*)&T6)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&T7)[0], ((short*)&T7)[1], ((short*)&T7)[2], ((short*)&T7)[3],
-      ((short*)&T7)[4], ((short*)&T7)[5], ((short*)&T7)[6], ((short*)&T7)[7] );
-    printf("\n");
-  }
-#endif
-#if 0
-  for( int n=0; n<8; n++ ) {
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I0)[0], ((short*)&I0)[1], ((short*)&I0)[2], ((short*)&I0)[3],
-      ((short*)&I0)[4], ((short*)&I0)[5], ((short*)&I0)[6], ((short*)&I0)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I1)[0], ((short*)&I1)[1], ((short*)&I1)[2], ((short*)&I1)[3],
-      ((short*)&I1)[4], ((short*)&I1)[5], ((short*)&I1)[6], ((short*)&I1)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I2)[0], ((short*)&I2)[1], ((short*)&I2)[2], ((short*)&I2)[3],
-      ((short*)&I2)[4], ((short*)&I2)[5], ((short*)&I2)[6], ((short*)&I2)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I3)[0], ((short*)&I3)[1], ((short*)&I3)[2], ((short*)&I3)[3],
-      ((short*)&I3)[4], ((short*)&I3)[5], ((short*)&I3)[6], ((short*)&I3)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I4)[0], ((short*)&I4)[1], ((short*)&I4)[2], ((short*)&I4)[3],
-      ((short*)&I4)[4], ((short*)&I4)[5], ((short*)&I4)[6], ((short*)&I4)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I5)[0], ((short*)&I5)[1], ((short*)&I5)[2], ((short*)&I5)[3],
-      ((short*)&I5)[4], ((short*)&I5)[5], ((short*)&I5)[6], ((short*)&I5)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I6)[0], ((short*)&I6)[1], ((short*)&I6)[2], ((short*)&I6)[3],
-      ((short*)&I6)[4], ((short*)&I6)[5], ((short*)&I6)[6], ((short*)&I6)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I7)[0], ((short*)&I7)[1], ((short*)&I7)[2], ((short*)&I7)[3],
-      ((short*)&I7)[4], ((short*)&I7)[5], ((short*)&I7)[6], ((short*)&I7)[7] );
-    printf("\n");
-  }
-#endif
 
 
 #if 1 //For the optimization level 1
@@ -742,20 +637,6 @@ static void partialButterflyInverse16_simd3(short *src, short *dst, int shift1, 
 
   const_vector_arr_1[0] = _mm_unpacklo_epi32(T0, T1);
   const_vector_arr_1[1] = _mm_unpackhi_epi32(T0, T1);
-#if 0
-  printf("\nFor step 0\n");
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&T0)[0], ((short*)&T0)[1], ((short*)&T0)[2], ((short*)&T0)[3],
-      ((short*)&T0)[4], ((short*)&T0)[5], ((short*)&T0)[6], ((short*)&T0)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&T1)[0], ((short*)&T1)[1], ((short*)&T1)[2], ((short*)&T1)[3],
-      ((short*)&T1)[4], ((short*)&T1)[5], ((short*)&T1)[6], ((short*)&T1)[7] );
-  printf("\nFor step 1\n");
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I0)[0], ((short*)&I0)[1], ((short*)&I0)[2], ((short*)&I0)[3],
-      ((short*)&I0)[4], ((short*)&I0)[5], ((short*)&I0)[6], ((short*)&I0)[7] );
-      printf(" %d %d %d %d %d %d %d %d\n", ((short*)&I1)[0], ((short*)&I1)[1], ((short*)&I1)[2], ((short*)&I1)[3],
-      ((short*)&I1)[4], ((short*)&I1)[5], ((short*)&I1)[6], ((short*)&I1)[7] );
-
-  return;
-#endif
 
 
 #if 1 //For the optimization level 2
@@ -842,7 +723,6 @@ static void partialButterflyInverse16_simd3(short *src, short *dst, int shift1, 
 
   /*************************** Optimization LEVEL 1 Begins *******************************************************/
 
-#if 1
     //Test phase begins (This portion is not optimizing rather is very costly)
 
     //Complete it tomorrow morning
@@ -891,34 +771,10 @@ static void partialButterflyInverse16_simd3(short *src, short *dst, int shift1, 
       EO[m][2] = temp_output1[0] + temp_output1[1];
       EO[m][3] = temp_output1[2] + temp_output1[3];
     }
-    //Test phase ends
-#else
-    for (int k=0; k<4; k++)
-    {
-
-      EO[0][k] = g_aiT16[ 2][k]*src[ 2*16] + g_aiT16[ 6][k]*src[ 6*16] + g_aiT16[10][k]*src[10*16] + g_aiT16[14][k]*src[14*16];
-      src++;
-      EO[1][k] = g_aiT16[ 2][k]*src[ 2*16] + g_aiT16[ 6][k]*src[ 6*16] + g_aiT16[10][k]*src[10*16] + g_aiT16[14][k]*src[14*16];
-      src++;
-      EO[2][k] = g_aiT16[ 2][k]*src[ 2*16] + g_aiT16[ 6][k]*src[ 6*16] + g_aiT16[10][k]*src[10*16] + g_aiT16[14][k]*src[14*16];
-      src++;
-      EO[3][k] = g_aiT16[ 2][k]*src[ 2*16] + g_aiT16[ 6][k]*src[ 6*16] + g_aiT16[10][k]*src[10*16] + g_aiT16[14][k]*src[14*16];
-      src++;
-      EO[4][k] = g_aiT16[ 2][k]*src[ 2*16] + g_aiT16[ 6][k]*src[ 6*16] + g_aiT16[10][k]*src[10*16] + g_aiT16[14][k]*src[14*16];
-      src++;
-      EO[5][k] = g_aiT16[ 2][k]*src[ 2*16] + g_aiT16[ 6][k]*src[ 6*16] + g_aiT16[10][k]*src[10*16] + g_aiT16[14][k]*src[14*16];
-      src++;
-      EO[6][k] = g_aiT16[ 2][k]*src[ 2*16] + g_aiT16[ 6][k]*src[ 6*16] + g_aiT16[10][k]*src[10*16] + g_aiT16[14][k]*src[14*16];
-      src++;
-      EO[7][k] = g_aiT16[ 2][k]*src[ 2*16] + g_aiT16[ 6][k]*src[ 6*16] + g_aiT16[10][k]*src[10*16] + g_aiT16[14][k]*src[14*16];
-      src = orig_src;
-    }
-#endif
     /*************************** Optimization LEVEL 1 Ends *******************************************************/
 
     /*************************** Optimization LEVEL 2 *******************************************************/
 
-#if 1
     I0 = _mm_load_si128((__m128i*)&src[64]);
     I1 = _mm_load_si128((__m128i*)&src[192]);
     I2 = _mm_load_si128((__m128i*)&src[0]);
@@ -954,59 +810,18 @@ static void partialButterflyInverse16_simd3(short *src, short *dst, int shift1, 
     src_vector_arr[5] = _mm_unpackhi_epi64(I2, I6);
     src_vector_arr[6] = _mm_unpacklo_epi64(I3, I7);
     src_vector_arr[7] = _mm_unpackhi_epi64(I3, I7);
-
     for( int m=0; m<8; m++ ) {
       *(__m128i *) temp_output1  = _mm_madd_epi16 ( const_vector_2, src_vector_arr[m] );
-#if 1
-      EEO[m][0] = temp_output1[0];
-      EEE[m][0] = temp_output1[1];
-      EEO[m][1] = temp_output1[2];
-      EEE[m][1] = temp_output1[3];
-      for (int k=0; k<2; k++)
-      {
-       EE[m][k] = EEE[m][k] + EEO[m][k];
-       EE[m][k+2] = EEE[m][1-k] - EEO[m][1-k];
-      }
-#else
       EE[m][0] = temp_output1[1] + temp_output1[0];
       EE[m][1] = temp_output1[3] + temp_output1[2];
       EE[m][2] = temp_output1[3] - temp_output1[2];
       EE[m][3] = temp_output1[1] - temp_output1[0];
-
-#endif
-#if 1
-      *(__m128i *) E[m] =  _mm_add_epi32( *(__m128i *) EE[m], *(__m128i *) EO[m] );
-      *(__m128i *) temp_output1 = _mm_sub_epi32( *(__m128i *) EE[m], *(__m128i *) E[m] );
-       *(__m128i *) &E[m][4] = _mm_shuffle_epi32( *(__m128i *) temp_output1, 27 );
-#else
       for (int k=0; k<4; k++)
       {
         E[m][k] = EE[m][k] + EO[m][k];
         E[m][k+4] = EE[m][3-k] - EO[m][3-k];
       }
-#endif
     }
-  #else
-    for( int m=0; m<8; m++ ){
-      EEO[m][0] = g_aiT16[4][0]*src[ 4*16 ] + g_aiT16[12][0]*src[ 12*16 ];
-      EEE[m][0] = g_aiT16[0][0]*src[ 0    ] + g_aiT16[ 8][0]*src[  8*16 ];
-      EEO[m][1] = g_aiT16[4][1]*src[ 4*16 ] + g_aiT16[12][1]*src[ 12*16 ];
-      EEE[m][1] = g_aiT16[0][1]*src[ 0    ] + g_aiT16[ 8][1]*src[  8*16 ];
-    /* Combining even and odd terms at each hierarchy levels to calculate the final spatial domain vector */
-      for (int k=0; k<2; k++)
-      {
-        EE[m][k] = EEE[m][k] + EEO[m][k];
-        EE[m][k+2] = EEE[m][1-k] - EEO[m][1-k];
-      }
-      for (int k=0; k<4; k++)
-      {
-         E[m][k] = EE[m][k] + EO[m][k];
-         E[m][k+4] = EE[m][3-k] - EO[m][3-k];
-      }
-      src++;
-    }
-    src = orig_src;
-#endif
     /*************************** Optimization LEVEL 2 Ends *******************************************************/
 
     /*************************** Optimization LEVEL 3 Begin *******************************************************/
@@ -1069,8 +884,8 @@ static void idct16_simd(short* pCoeff, short* pDst)
   partialButterflyInverse16_simd2(pCoeff, pDst, 7, 12);
   #else
   short tmp[ 16*16] __attribute__((aligned(16)));
-  partialButterflyInverse16_simd3(pCoeff, tmp, 7, 12); //Just first one is used
-  partialButterflyInverse16_simd3(tmp, pDst, 12, 7);   //Just first one is used. Second is for furture purpose
+  partialButterflyInverse16_simd3(pCoeff, tmp, 7); //Just first one is used
+  partialButterflyInverse16_simd3(tmp, pDst, 12);   //Just first one is used. Second is for furture purpose
   #endif
 #endif
 }
