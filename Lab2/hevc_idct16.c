@@ -918,15 +918,15 @@ static void partialButterflyInverse16_simd3(short *src, short *dst, int shift1, 
 
     /*************************** Optimization LEVEL 2 *******************************************************/
 
-#if 0
-    I0 = _mm_load_si128((__m128i*)&src[128]);
-    I1 = _mm_load_si128((__m128i*)&src[0]);
-    I2 = _mm_load_si128((__m128i*)&src[192]);
-    I3 = _mm_load_si128((__m128i*)&src[64]);
-    I4 = _mm_load_si128((__m128i*)&src[128]);
-    I5 = _mm_load_si128((__m128i*)&src[0]);
-    I6 = _mm_load_si128((__m128i*)&src[192]);
-    I7 = _mm_load_si128((__m128i*)&src[64]);
+#if 1
+    I0 = _mm_load_si128((__m128i*)&src[64]);
+    I1 = _mm_load_si128((__m128i*)&src[192]);
+    I2 = _mm_load_si128((__m128i*)&src[0]);
+    I3 = _mm_load_si128((__m128i*)&src[128]);
+    I4 = _mm_load_si128((__m128i*)&src[64]);
+    I5 = _mm_load_si128((__m128i*)&src[192]);
+    I6 = _mm_load_si128((__m128i*)&src[0]);
+    I7 = _mm_load_si128((__m128i*)&src[128]);
 
     T0 = _mm_unpacklo_epi16(I0, I1);
     T1 = _mm_unpackhi_epi16(I0, I1);
@@ -954,6 +954,7 @@ static void partialButterflyInverse16_simd3(short *src, short *dst, int shift1, 
     src_vector_arr[5] = _mm_unpackhi_epi64(I2, I6);
     src_vector_arr[6] = _mm_unpacklo_epi64(I3, I7);
     src_vector_arr[7] = _mm_unpackhi_epi64(I3, I7);
+
     for( int m=0; m<8; m++ ) {
       *(__m128i *) temp_output1  = _mm_madd_epi16 ( const_vector_2, src_vector_arr[m] );
 #if 1
@@ -973,7 +974,7 @@ static void partialButterflyInverse16_simd3(short *src, short *dst, int shift1, 
       EE[m][3] = temp_output1[1] - temp_output1[0];
 
 #endif
-#if 0
+#if 1
       *(__m128i *) E[m] =  _mm_add_epi32( *(__m128i *) EE[m], *(__m128i *) EO[m] );
       *(__m128i *) temp_output1 = _mm_sub_epi32( *(__m128i *) EE[m], *(__m128i *) E[m] );
        *(__m128i *) &E[m][4] = _mm_shuffle_epi32( *(__m128i *) temp_output1, 27 );
