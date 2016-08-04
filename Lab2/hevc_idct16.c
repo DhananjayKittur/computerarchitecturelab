@@ -1,3 +1,7 @@
+//ASSIGNMENT_2
+//Bogati, Rajendra (376628)
+//Kittur Gonibasappa, Dhananjaya Kumara(376629)
+//Pokhrel, Niroj(376630)
 #include <immintrin.h>
 #include <malloc.h>
 #include <stdio.h>
